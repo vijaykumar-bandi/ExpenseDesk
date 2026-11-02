@@ -1,0 +1,93 @@
+# Tasks: ExpenseDesk
+
+- [ ] 1. Project setup
+  - [ ] 1.1 Project setup
+    - Create the two-package skeleton: `frontend/` (Vue 3 + TypeScript + Vite + Vue Router + Pinia) and `backend/` (Laravel 11 on PHP 8.3), one root `package.json` whose `postinstall` runs `composer install` in `backend/`, and the root scripts `dev`, `test`, `test:backend`, `test:frontend`, `seed`, `backup`, `restore`.
+    - Write the shared frontend foundation: `main.ts`, `App.vue`, the router with `/` redirecting to `/sign-in` and the role guards, `stores/auth.ts`, `api/client.ts` (CSRF header, session cookie, 401 to `/sign-in`, `ApiError`), `lib/money.ts`, `lib/dates.ts`, and the components `AppShell`, `StatusBadge`, `DataTable`, `EmptyState`, `LoadingState`, `ErrorState`, `ConfirmDialog`, `ToastHost`.
+    - Write `frontend/src/styles/tokens.css` with the colours, font, spacing and radius of the design's Look and feel as CSS variables, and the global base styles every screen's own stylesheet builds on.
+    - Build the whole API of the design: every endpoint in its API endpoints tables (auth, reports, lines and receipts, decisions, finance, export, administration, health) with its controllers, form requests, policies, services, models and migrations, the `EnsureActiveSession` and `RetryOnBusyDatabase` middleware, the SQLite setup (foreign keys, WAL, 5-second busy timeout), the indexes, the append-only audit events, the `DevelopmentSeeder` with the four test logins and sample data, the backup and restore commands, and the PHPUnit feature tests that call every endpoint and check every 401/403/419/422/409/503 answer, the paise totals, the single reimbursement under two concurrent requests and the audit event written in the same transaction.
+    - Keep each screen's data request within 2 seconds: the indexes of the design cover the report list, the approval inbox filters, the approved unpaid list, the payment history search and the audit history, and a PHPUnit test seeds 2,000 reports and asserts that each of those list endpoints answers within 2 seconds.
+    - Add `README.md` with the commands of Build and run plus the deployment, backup and restore steps, `.gitignore` with `.env`, `.env.example`, the Vite proxy of `/api` to the API port, the health path, and `@playwright/test` with an `e2e/` folder holding a `.gitkeep` that Vitest leaves out.
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 12.1, 12.2, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9, 12.10, 13.9_
+    - _Files: package.json, README.md, .gitignore, .env.example, frontend/**, backend/**, e2e/.gitkeep_
+    - _Verify: npm test --workspace backend_
+    - _Verify: npm test --workspace frontend_
+    - _Verify: npm run build --workspace frontend_
+  - [ ] 1.2 Sign-in and password recovery
+    - Build the sign-in page, the forgot password page and the reset password page: the centred card with the ExpenseDesk wordmark, the email and password fields, Sign in, the Forgot password link, the error message above the button, the same message for a wrong password and a deactivated account, the rate-limit message, the always-the-same confirmation, the two password fields of at least 12 characters, and the invalid-link message with a link to send a new one; keyboard order, labels, visible focus, loading and error states.
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 13.4, 13.5, 13.6, 13.7_
+    - _Depends: 1.1_
+    - _Files: frontend/src/views/SignInView.vue, frontend/src/views/SignInView.css, frontend/src/views/ForgotPasswordView.vue, frontend/src/views/ForgotPasswordView.css, frontend/src/views/ResetPasswordView.vue, frontend/src/views/ResetPasswordView.css, frontend/src/views/__tests__/SignInView.test.ts, frontend/src/views/__tests__/ForgotPasswordView.test.ts, frontend/src/views/__tests__/ResetPasswordView.test.ts_
+    - _Verify: npm test --workspace frontend -- SignInView_
+    - _Verify: npm test --workspace frontend -- ForgotPasswordView_
+    - _Verify: npm test --workspace frontend -- ResetPasswordView_
+  - [ ] 1.3 Employee dashboard
+    - Build the Employee dashboard: the header with the person's name and New report, the five status cards in the order Draft, Awaiting approval, Changes requested, Approved and Paid with their count and INR total, the report list newest first with title, total, status badge and last updated, a row opening the report details and a Changes requested row opening the report editor, the empty, loading and error states, and the phone layout with no horizontal scrolling and 44px buttons.
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 13.1, 13.4, 13.5, 13.6, 13.7, 13.8_
+    - _Depends: 1.1_
+    - _Files: frontend/src/views/EmployeeDashboardView.vue, frontend/src/views/EmployeeDashboardView.css, frontend/src/views/__tests__/EmployeeDashboardView.test.ts_
+    - _Verify: npm test --workspace frontend -- EmployeeDashboardView_
+  - [ ] 1.4 Report editor
+    - Build the report editor: the title and business purpose fields, one card per expense line with its expense date, category select, merchant, amount in INR and optional note, Add line and Remove line, the receipt row with the file name and an Add receipt button that offers the camera on a phone, the running total in a sticky bar beside Save draft and Submit, the per-line messages for a missing receipt, a required field, a zero or negative amount, a future date and a file that is not a PDF, JPEG or PNG of up to 5 MB, the empty-report message, and the entered values kept on a failed save, upload or submit.
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, 13.1, 13.2, 13.4, 13.5, 13.6, 13.7_
+    - _Depends: 1.1_
+    - _Files: frontend/src/views/ReportEditorView.vue, frontend/src/views/ReportEditorView.css, frontend/src/views/__tests__/ReportEditorView.test.ts_
+    - _Verify: npm test --workspace frontend -- ReportEditorView_
+  - [ ] 1.5 Report details and activity history
+    - Build the report details screen: the title, business purpose, Employee, Manager, status badge and total, the lines as cards with their receipts as links, the activity history newest first with the action, actor, Asia/Kolkata time and reason, the decision buttons Approve, Request changes and Reject with their reason dialog, the reassign dialog for an Administrator, no changing button on a Paid report, the access message, and the phone and desktop layouts.
+    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.3, 5.4, 5.5, 5.7, 5.8, 5.9, 13.1, 13.4, 13.5, 13.6, 13.7_
+    - _Depends: 1.1_
+    - _Files: frontend/src/views/ReportDetailsView.vue, frontend/src/views/ReportDetailsView.css, frontend/src/views/__tests__/ReportDetailsView.test.ts_
+    - _Verify: npm test --workspace frontend -- ReportDetailsView_
+  - [ ] 1.6 Manager approval inbox
+    - Build the Manager approval inbox: the filter bar with an Employee select, a submission date range and an amount range, the sortable table with Employee, Report, Submitted, Total and Waiting, the Waiting 3+ days label, the row that opens the report details, the no-match message, the loading and error states, and the phone layout with filter chips and stacked cards.
+    - _Requirements: 5.1, 5.2, 5.6, 5.10, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8_
+    - _Depends: 1.1_
+    - _Files: frontend/src/views/ApprovalInboxView.vue, frontend/src/views/ApprovalInboxView.css, frontend/src/views/__tests__/ApprovalInboxView.test.ts_
+    - _Verify: npm test --workspace frontend -- ApprovalInboxView_
+  - [ ] 1.7 Finance dashboard and reimbursement
+    - Build the Finance dashboard: the approved unpaid total card and count, the paid-period card with its date range and the current month selected on open, the approved unpaid table, the Record payment dialog with the payment date, the payment reference and the full amount filled in and not editable, the already-paid message, the future-date message, the searchable payment history, the loading, empty and error states, and the desktop table layout.
+    - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8_
+    - _Depends: 1.1_
+    - _Files: frontend/src/views/FinanceDashboardView.vue, frontend/src/views/FinanceDashboardView.css, frontend/src/views/__tests__/FinanceDashboardView.test.ts_
+    - _Verify: npm test --workspace frontend -- FinanceDashboardView_
+  - [ ] 1.8 CSV export
+    - Add the Export CSV button to the Finance dashboard, which downloads `/api/finance/export.csv` with the active period and search filters, and the component test that checks the export URL carries the same `from`, `to` and `q` as the screen.
+    - _Requirements: 7.1, 7.2, 7.3, 7.4_
+    - _Depends: 1.7_
+    - _Files: frontend/src/views/FinanceDashboardView.vue, frontend/src/views/FinanceDashboardView.css, frontend/src/views/__tests__/FinanceDashboardView.test.ts_
+    - _Verify: npm test --workspace frontend -- FinanceDashboardView_
+  - [ ] 1.9 Administration users and manager assignments
+    - Build the Administration users screen: the sortable table with name, email, roles, assigned Manager and active state, the Add user dialog with a name, an email, at least one role and an initial password of at least 12 characters, the edit dialog for roles, Manager and active state, the deactivate action with its confirmation, the reassign dialog for a Submitted report with a reason of at least 10 characters, and the access message for a person without the Administrator role.
+    - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.10, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8_
+    - _Depends: 1.1_
+    - _Files: frontend/src/views/AdminUsersView.vue, frontend/src/views/AdminUsersView.css, frontend/src/views/__tests__/AdminUsersView.test.ts_
+    - _Verify: npm test --workspace frontend -- AdminUsersView_
+  - [ ] 1.10 Administration categories
+    - Build the Administration categories screen: the list of Travel, Meals, Accommodation, Office Supplies and Other with their active state, the Add category dialog, the deactivate and activate actions, the note that a deactivated category stays on the reports that already use it, and the access message for a person without the Administrator role.
+    - _Requirements: 8.6, 8.7, 8.8, 8.10, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8_
+    - _Depends: 1.1_
+    - _Files: frontend/src/views/AdminCategoriesView.vue, frontend/src/views/AdminCategoriesView.css, frontend/src/views/__tests__/AdminCategoriesView.test.ts_
+    - _Verify: npm test --workspace frontend -- AdminCategoriesView_
+  - [ ] 1.11 Administration audit history
+    - Build the Administration audit history screen: every audit event newest first with the actor, the Asia/Kolkata time, the report and the state change, paged 50 at a time, with no control that edits or deletes an event, and the access message for a person without the Administrator role.
+    - _Requirements: 8.9, 8.10, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8_
+    - _Depends: 1.1_
+    - _Files: frontend/src/views/AdminAuditView.vue, frontend/src/views/AdminAuditView.css, frontend/src/views/__tests__/AdminAuditView.test.ts_
+    - _Verify: npm test --workspace frontend -- AdminAuditView_
+  - [ ] 1.12 Browser tests for the Employee, Manager and Finance workflows
+    - Write the Playwright journeys in `e2e/`: the Employee journey (sign in, create a report with ₹750.50 travel and ₹1,250.25 accommodation, upload the receipt, submit, see ₹2,000.75), the Manager journey (inbox, request changes with a reason, approve), the Finance journey (outstanding total, record payment, paid total, export CSV) and the access-control journey (another Employee's report and receipt URL).
+    - _Requirements: 1.2, 3.3, 3.4, 3.10, 4.4, 5.4, 5.5, 6.5, 6.6, 7.1, 9.2, 12.3_
+    - _Depends: 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8_
+    - _Files: e2e/**, playwright.config.ts_
+    - _Verify: npx playwright test --list_
+- [ ] 2. Deployment setup
+  - [ ] 2.1 Deployment setup
+    - Write the Dockerfile that builds the Vue app and serves it with the Laravel API from one origin, the `.dockerignore`, and `docker-compose.prod.yml` with the app image `<slug>:${APP_TAG}`, the database file and receipts folder as volumes, and a Caddy service for HTTPS; the start command runs the migrations and creates the live app's first Administrator from `FIRST_ADMIN_EMAIL` and `FIRST_ADMIN_PASSWORD` when both are set and no account exists, and never runs the seeder.
+    - _Requirements: 12.3, 12.4, 12.10_
+    - _Depends: 1.1_
+    - _Mode: devops_
+    - _Area: deploy_
+    - _Files: Dockerfile, .dockerignore, docker-compose.prod.yml, Caddyfile_
+    - _Verify: docker compose -f docker-compose.prod.yml config --quiet --no-interpolate_
+    - _Verify: docker build -t expensedesk:verify ._
