@@ -72,7 +72,7 @@
     - _Files: frontend/src/views/AdminUsersView.vue, frontend/src/views/AdminUsersView.css, frontend/src/views/__tests__/AdminUsersView.test.ts_
     - _Verify: npm test --workspace frontend -- AdminUsersView_
     - _Issue: #8_
-  - [ ] 1.10 Administration categories
+  - [x] 1.10 Administration categories
     - Build the Administration categories screen: the list of Travel, Meals, Accommodation, Office Supplies and Other with their active state, the Add category dialog, the deactivate and activate actions, the note that a deactivated category stays on the reports that already use it, and the access message for a person without the Administrator role.
     - _Requirements: 8.6, 8.7, 8.8, 8.10, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8_
     - _Depends: 1.1_
