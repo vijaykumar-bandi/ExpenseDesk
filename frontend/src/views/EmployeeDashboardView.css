@@ -1,0 +1,209 @@
+/* Employee dashboard: phone first, then the desktop table-like list. */
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.greeting {
+  margin: 0;
+  font-size: 22px;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-min-height);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Five status cards: 2 columns on a phone with the fifth full width. */
+.status-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.status-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-3);
+}
+
+.status-card:last-child {
+  grid-column: 1 / -1;
+}
+
+.status-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.status-count {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.status-total {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.status-card-draft {
+  border-left: 3px solid var(--color-muted);
+}
+
+.status-card-submitted,
+.status-card-changes_requested {
+  border-left: 3px solid var(--color-warning);
+}
+
+.status-card-approved,
+.status-card-paid {
+  border-left: 3px solid var(--color-success);
+}
+
+/* The report list: stacked cards on a phone. */
+.report-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.report-row {
+  padding: 0;
+  min-width: 0;
+}
+
+.report-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'title total'
+    'status status'
+    'updated updated';
+  gap: var(--space-1) var(--space-3);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  min-height: var(--control-min-height);
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-card);
+}
+
+.report-link:hover {
+  background: var(--color-row-hover);
+}
+
+.report-title {
+  grid-area: title;
+  font-weight: 600;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.report-total {
+  grid-area: total;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.report-link .badge {
+  grid-area: status;
+  justify-self: start;
+}
+
+.report-updated {
+  grid-area: updated;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.report-list-header {
+  display: none;
+}
+
+/* Desktop: the five cards in one row, the list as a table. */
+@media (min-width: 768px) {
+  .status-cards {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .status-card:last-child {
+    grid-column: auto;
+  }
+
+  .report-list {
+    gap: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    overflow: hidden;
+  }
+
+  .report-list-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 140px 180px 200px;
+    column-gap: var(--space-6);
+    padding: 0 var(--space-4) var(--space-2);
+    color: var(--color-muted);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .report-list-header span:nth-child(2),
+  .report-list-header span:nth-child(4) {
+    text-align: right;
+  }
+
+  .report-row {
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .report-row:last-child {
+    border-bottom: none;
+  }
+
+  .report-link {
+    grid-template-columns: minmax(0, 1fr) 140px 180px 200px;
+    grid-template-areas: 'title total status updated';
+    column-gap: var(--space-6);
+    padding: var(--space-3) var(--space-4);
+    border-radius: 0;
+  }
+
+  .report-total {
+    text-align: right;
+  }
+
+  .report-link .badge {
+    justify-self: start;
+  }
+
+  .report-updated {
+    text-align: right;
+  }
+}
