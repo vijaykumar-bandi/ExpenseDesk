@@ -23,7 +23,7 @@
     - _Verify: npm test --workspace frontend -- ForgotPasswordView_
     - _Verify: npm test --workspace frontend -- ResetPasswordView_
     - _Issue: #2_
-  - [ ] 1.3 Employee dashboard
+  - [x] 1.3 Employee dashboard
     - Build the Employee dashboard: the header with the person's name and New report, the five status cards in the order Draft, Awaiting approval, Changes requested, Approved and Paid with their count and INR total, the report list newest first with title, total, status badge and last updated, a row opening the report details and a Changes requested row opening the report editor, the empty, loading and error states, and the phone layout with no horizontal scrolling and 44px buttons.
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 13.1, 13.4, 13.5, 13.6, 13.7, 13.8_
     - _Depends: 1.1_
