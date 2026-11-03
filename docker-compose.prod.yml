@@ -1,0 +1,76 @@
+services:
+  app:
+    image: expensedesk:${APP_TAG:?set APP_TAG in the deployment environment}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    restart: unless-stopped
+    init: true
+    environment:
+      APP_NAME: ExpenseDesk
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY:?set APP_KEY in the deployment environment}
+      APP_URL: https://${APP_DOMAIN:?set APP_DOMAIN in the deployment environment}
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /var/lib/expensedesk/database.sqlite
+      DB_FOREIGN_KEYS: "true"
+      CACHE_STORE: database
+      SESSION_DRIVER: database
+      SESSION_SECURE_COOKIE: "true"
+      SESSION_SAME_SITE: lax
+      FIRST_ADMIN_EMAIL: ${FIRST_ADMIN_EMAIL:-}
+      FIRST_ADMIN_PASSWORD: ${FIRST_ADMIN_PASSWORD:-}
+      LOG_CHANNEL: stderr
+    volumes:
+      - database:/var/lib/expensedesk
+      - receipts:/app/storage/app/receipts
+      - backups:/app/storage/app/backups
+    expose:
+      - "8000"
+    healthcheck:
+      test:
+        - CMD
+        - php
+        - -r
+        - '$response = @file_get_contents("http://127.0.0.1:8000/api/health"); exit($response !== false && str_contains($response, "\"status\":\"ok\"") ? 0 : 1);'
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  caddy:
+    # Caddy 2.10.2; digest still needs pinning from a networked Docker host.
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?set APP_DOMAIN in the deployment environment}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+
+volumes:
+  database:
+  receipts:
+  backups:
+  caddy_data:
+  caddy_config:
