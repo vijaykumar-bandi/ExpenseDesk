@@ -89,6 +89,7 @@ class Report extends Model
             'total_paise' => (int) $this->total_paise,
             'updated_at' => $this->updated_at?->toIso8601String(),
             'submitted_at' => $this->submitted_at?->toIso8601String(),
+            'decided_at' => $this->decided_at?->toIso8601String(),
             'employee' => $this->employee ? [
                 'id' => $this->employee->id,
                 'name' => $this->employee->name,
