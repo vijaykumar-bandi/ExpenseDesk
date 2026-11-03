@@ -16,32 +16,6 @@ const frontend = join(root, 'frontend');
 const isWindows = process.platform === 'win32';
 const port = process.env.PORT || '5173';
 
-function reserveAvailablePort(preferredPort) {
-  return new Promise((resolve, reject) => {
-    const server = createServer();
-    server.once('error', reject);
-    server.listen(Number(preferredPort), '127.0.0.1', () => {
-      const address = server.address();
-      const selectedPort = typeof address === 'object' && address ? String(address.port) : preferredPort;
-      server.close((error) => (error ? reject(error) : resolve(selectedPort)));
-    });
-  });
-}
-
-let apiPort;
-try {
-  apiPort = await reserveAvailablePort(process.env.API_PORT || '8000');
-} catch (error) {
-  if (process.env.API_PORT) {
-    fail(`API_PORT ${process.env.API_PORT} is unavailable: ${error.message}`);
-  }
-
-  // Port 8000 is the default, but another checkout may already be using it.
-  // Pick a free loopback port and pass that same port to Vite's proxy.
-  apiPort = await reserveAvailablePort('0');
-  console.log(`[dev] Port 8000 is unavailable; using API port ${apiPort}.`);
-}
-
 function fail(message) {
   console.error(`[dev] ${message}`);
   process.exit(1);
@@ -79,8 +53,6 @@ const dbFile = join(dbDir, 'database.sqlite');
 if (!existsSync(dbFile)) {
   writeFileSync(dbFile, '');
 }
-
-const childEnv = { ...process.env, API_PORT: apiPort, PORT: port };
 
 // PHP on PATH first, then the usual Windows install folders, so a PHP installed
 // outside PATH still starts the API.
@@ -121,6 +93,58 @@ const php = findPhp();
 if (!php) {
   fail('PHP 8.3 was not found on PATH. Install PHP 8.3 and Composer, then run `npm install` again.');
 }
+
+function reserveAvailablePort(preferredPort) {
+  return new Promise((resolve, reject) => {
+    const server = createServer();
+    server.once('error', reject);
+    server.listen(Number(preferredPort), '127.0.0.1', () => {
+      const address = server.address();
+      const selectedPort = typeof address === 'object' && address ? String(address.port) : preferredPort;
+      server.close((error) => (error ? reject(error) : resolve(selectedPort)));
+    });
+  });
+}
+
+function phpCanBind(portToCheck) {
+  const probe = spawnSync(
+    php,
+    ['-r', `$s=@stream_socket_server('tcp://127.0.0.1:${portToCheck}', $e, $m); if (!$s) { fwrite(STDERR, $m); exit(1); } fclose($s);`],
+    { cwd: backend, stdio: 'pipe', env: process.env },
+  );
+  return !probe.error && probe.status === 0;
+}
+
+async function selectApiPort() {
+  const configured = process.env.API_PORT;
+  const preferred = configured || '8000';
+
+  try {
+    const candidate = await reserveAvailablePort(preferred);
+    if (phpCanBind(candidate)) return candidate;
+    throw new Error('PHP cannot bind this port');
+  } catch (error) {
+    if (configured) {
+      fail(`API_PORT ${configured} is unavailable: ${error.message}`);
+    }
+  }
+
+  // Windows can reserve a port for one runtime while refusing it to another.
+  // Ask the OS for candidates until both Node and PHP can bind one, then give
+  // that same port to Laravel and Vite's proxy.
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const candidate = await reserveAvailablePort('0');
+    if (phpCanBind(candidate)) {
+      console.log(`[dev] Port 8000 is unavailable; using API port ${candidate}.`);
+      return candidate;
+    }
+  }
+
+  fail('Could not find an available loopback port for the Laravel API.');
+}
+
+const apiPort = await selectApiPort();
+const childEnv = { ...process.env, API_PORT: apiPort, PORT: port };
 
 function runPhp(args) {
   const result = spawnSync(php, args, { cwd: backend, stdio: 'inherit', env: childEnv });
