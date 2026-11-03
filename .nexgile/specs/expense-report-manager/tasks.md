@@ -1,6 +1,6 @@
 # Tasks: ExpenseDesk
 
-- [ ] 1. Project setup
+- [x] 1. Project setup
   - [x] 1.1 Project setup
     - Create the two-package skeleton: `frontend/` (Vue 3 + TypeScript + Vite + Vue Router + Pinia) and `backend/` (Laravel 11 on PHP 8.3), one root `package.json` whose `postinstall` runs `composer install` in `backend/`, and the root scripts `dev`, `test`, `test:backend`, `test:frontend`, `seed`, `backup`, `restore`.
     - Write the shared frontend foundation: `main.ts`, `App.vue`, the router with `/` redirecting to `/sign-in` and the role guards, `stores/auth.ts`, `api/client.ts` (CSRF header, session cookie, 401 to `/sign-in`, `ApiError`), `lib/money.ts`, `lib/dates.ts`, and the components `AppShell`, `StatusBadge`, `DataTable`, `EmptyState`, `LoadingState`, `ErrorState`, `ConfirmDialog`, `ToastHost`.
@@ -86,7 +86,7 @@
     - _Files: frontend/src/views/AdminAuditView.vue, frontend/src/views/AdminAuditView.css, frontend/src/views/__tests__/AdminAuditView.test.ts_
     - _Verify: npm test --workspace frontend -- AdminAuditView_
     - _Issue: #10_
-  - [ ] 1.12 Browser tests for the Employee, Manager and Finance workflows
+  - [x] 1.12 Browser tests for the Employee, Manager and Finance workflows
     - Write the Playwright journeys in `e2e/`: the Employee journey (sign in, create a report with ₹750.50 travel and ₹1,250.25 accommodation, upload the receipt, submit, see ₹2,000.75), the Manager journey (inbox, request changes with a reason, approve), the Finance journey (outstanding total, record payment, paid total, export CSV) and the access-control journey (another Employee's report and receipt URL).
     - _Requirements: 1.2, 3.3, 3.4, 3.10, 4.4, 5.4, 5.5, 6.5, 6.6, 7.1, 9.2, 12.3_
     - _Depends: 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8_
