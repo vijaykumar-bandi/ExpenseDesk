@@ -14,16 +14,20 @@ class StoreLineRequest extends FormRequest
 
     public function rules(): array
     {
+        $draft = $this->boolean('draft');
+        $todayInKolkata = now(config('expensedesk.timezone', 'Asia/Kolkata'))->toDateString();
+
         return [
-            'expense_date' => ['required', 'date', 'before_or_equal:today'],
+            'expense_date' => [$draft ? 'nullable' : 'required', 'date', $draft ? null : 'before_or_equal:'.$todayInKolkata],
             'category_id' => [
-                'required',
+                $draft ? 'nullable' : 'required',
                 'integer',
                 Rule::exists('categories', 'id')->where('active', true),
             ],
-            'merchant' => ['required', 'string', 'max:255'],
-            'amount_paise' => ['required', 'integer', 'min:1'],
+            'merchant' => [$draft ? 'nullable' : 'required', 'string', 'max:255'],
+            'amount_paise' => [$draft ? 'nullable' : 'required', 'integer', $draft ? null : 'min:1'],
             'note' => ['nullable', 'string', 'max:1000'],
+            'draft' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -31,7 +35,7 @@ class StoreLineRequest extends FormRequest
     {
         return [
             'expense_date.before_or_equal' => 'Expense date cannot be in the future',
-            'amount_paise.min' => 'Amount must be greater than zero',
+            'amount_paise.min' => 'Amount must be more than zero',
             'category_id.exists' => 'Choose an active category',
         ];
     }
