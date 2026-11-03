@@ -30,7 +30,7 @@
     - _Files: frontend/src/views/EmployeeDashboardView.vue, frontend/src/views/EmployeeDashboardView.css, frontend/src/views/__tests__/EmployeeDashboardView.test.ts_
     - _Verify: npm test --workspace frontend -- EmployeeDashboardView_
     - _Issue: #3_
-  - [ ] 1.4 Report editor
+  - [x] 1.4 Report editor
     - Build the report editor: the title and business purpose fields, one card per expense line with its expense date, category select, merchant, amount in INR and optional note, Add line and Remove line, the receipt row with the file name and an Add receipt button that offers the camera on a phone, the running total in a sticky bar beside Save draft and Submit, the per-line messages for a missing receipt, a required field, a zero or negative amount, a future date and a file that is not a PDF, JPEG or PNG of up to 5 MB, the empty-report message, and the entered values kept on a failed save, upload or submit.
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, 13.1, 13.2, 13.4, 13.5, 13.6, 13.7_
     - _Depends: 1.1_
@@ -58,7 +58,7 @@
     - _Files: frontend/src/views/FinanceDashboardView.vue, frontend/src/views/FinanceDashboardView.css, frontend/src/views/__tests__/FinanceDashboardView.test.ts_
     - _Verify: npm test --workspace frontend -- FinanceDashboardView_
     - _Issue: #7_
-  - [ ] 1.8 CSV export
+  - [x] 1.8 CSV export
     - Add the Export CSV button to the Finance dashboard, which downloads `/api/finance/export.csv` with the active period and search filters, and the component test that checks the export URL carries the same `from`, `to` and `q` as the screen.
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
     - _Depends: 1.7_
