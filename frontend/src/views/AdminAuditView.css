@@ -1,0 +1,47 @@
+/* Administration audit history: a read-only, paged table of every audit event. */
+
+.audit-page h1 {
+  margin-bottom: var(--space-2);
+}
+
+.audit-page .muted {
+  color: var(--color-muted);
+  margin: 0 0 var(--space-4);
+}
+
+.access-denied {
+  padding: var(--space-4);
+  background: var(--color-error-surface);
+  color: var(--color-error);
+  border-radius: var(--radius-card);
+}
+
+.access-denied p {
+  margin: 0;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-4);
+}
+
+.pager-status {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+@media (max-width: 767px) {
+  .pager {
+    justify-content: center;
+  }
+
+  .pager-status {
+    order: -1;
+    width: 100%;
+    text-align: center;
+  }
+}

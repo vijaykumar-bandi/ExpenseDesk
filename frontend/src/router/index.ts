@@ -6,6 +6,7 @@ declare module 'vue-router' {
   interface RouteMeta {
     public?: boolean;
     roles?: Role[];
+    showAccessDenied?: boolean;
     title?: string;
   }
 }
@@ -89,7 +90,7 @@ const routes: RouteRecordRaw[] = [
     path: '/admin/audit',
     name: 'admin-audit',
     component: () => import('../views/AdminAuditView.vue'),
-    meta: { roles: ['Administrator'], title: 'Audit history' },
+    meta: { roles: ['Administrator'], showAccessDenied: true, title: 'Audit history' },
   },
   {
     path: '/:pathMatch(.*)*',
@@ -124,6 +125,7 @@ router.beforeEach(async (to) => {
 
   const allowed = to.meta.roles;
   if (allowed && allowed.length > 0 && !allowed.some((role) => auth.roles.includes(role))) {
+    if (to.meta.showAccessDenied) return true;
     return homeForRoles(auth.roles);
   }
 
