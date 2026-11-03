@@ -316,6 +316,26 @@ describe('FinanceDashboardView', () => {
     vi.useRealTimers();
   });
 
+  it('exports CSV with the same period and search filters as the screen', async () => {
+    mockLoad();
+    const wrapper = mountView();
+    await flushPromises();
+
+    await wrapper.get('#period-from').setValue('2026-10-03');
+    await wrapper.get('#period-to').setValue('2026-10-28');
+    await wrapper.get('#payment-search').setValue('  Anil & Rao  ');
+
+    const exportLink = wrapper.get<HTMLAnchorElement>('.export-csv');
+    expect(exportLink.text()).toBe('Export CSV');
+    const url = new URL(exportLink.attributes('href'), 'http://localhost');
+    expect(url.pathname).toBe('/api/finance/export.csv');
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      from: '2026-10-03',
+      to: '2026-10-28',
+      q: 'Anil & Rao',
+    });
+  });
+
   it('ignores an older search response that resolves after the latest search', async () => {
     mockLoad();
     const wrapper = mountView();

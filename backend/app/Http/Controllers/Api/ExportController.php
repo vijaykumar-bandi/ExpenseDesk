@@ -39,20 +39,28 @@ class ExportController extends Controller
 
         return response()->streamDownload(function () use ($payments) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Payment date', 'Employee', 'Report', 'Amount (INR)', 'Reference', 'Recorded by']);
+            fputcsv($out, ['Payment date', 'Payment reference', 'Employee', 'Report title', 'Amount in INR']);
 
             foreach ($payments as $payment) {
                 fputcsv($out, [
                     $payment->payment_date?->format('Y-m-d'),
-                    $payment->report?->employee?->name,
-                    $payment->report?->title,
+                    self::safeCsvText($payment->payment_reference),
+                    self::safeCsvText($payment->report?->employee?->name),
+                    self::safeCsvText($payment->report?->title),
                     number_format($payment->amount_paise / 100, 2, '.', ''),
-                    $payment->payment_reference,
-                    $payment->recordedBy?->name,
                 ]);
             }
 
             fclose($out);
         }, 'expensedesk-payments.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    private static function safeCsvText(?string $value): string
+    {
+        if ($value !== null && preg_match('/^[=+\-@]/', $value) === 1) {
+            return "'".$value;
+        }
+
+        return $value ?? '';
     }
 }
