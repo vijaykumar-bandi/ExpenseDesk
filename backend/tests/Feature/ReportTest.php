@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Report;
 use App\Models\Receipt;
+use Illuminate\Support\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -94,7 +95,7 @@ class ReportTest extends TestCase
         $category = $this->makeCategory('Travel');
 
         $this->actingAs($employee)->postJson('/api/reports/'.$report->id.'/lines', [
-            'expense_date' => now()->addDay()->format('Y-m-d'),
+            'expense_date' => now(config('expensedesk.timezone', 'Asia/Kolkata'))->addDay()->toDateString(),
             'category_id' => $category->id,
             'merchant' => 'IndiGo',
             'amount_paise' => 100,
@@ -102,40 +103,101 @@ class ReportTest extends TestCase
             ->assertJsonPath('errors.expense_date.0', 'Expense date cannot be in the future');
     }
 
-    public function test_a_zero_amount_answers_422(): void
+    public function test_current_kolkata_date_can_be_saved_and_submitted_shortly_after_local_midnight(): void
+    {
+        Carbon::setTestNow('2026-11-03 19:00:00 UTC');
+
+        $manager = $this->makeUser('Manager');
+        $employee = $this->makeUser('Employee', ['manager_id' => $manager->id]);
+        $report = $this->makeReport($employee);
+        $category = $this->makeCategory('Travel');
+
+        $lineId = $this->actingAs($employee)->postJson('/api/reports/'.$report->id.'/lines', [
+            'expense_date' => '2026-11-04',
+            'category_id' => $category->id,
+            'merchant' => 'Metro',
+            'amount_paise' => 99999,
+        ])->assertCreated()->json('data.id');
+
+        $this->actingAs($employee)->patchJson('/api/reports/'.$report->id.'/lines/'.$lineId, [
+            'expense_date' => '2026-11-04',
+        ])->assertOk();
+
+        $this->actingAs($employee)->postJson('/api/reports/'.$report->id.'/submit')
+            ->assertOk()
+            ->assertJsonPath('data.status', 'submitted')
+            ->assertJsonPath('data.manager.id', $manager->id);
+    }
+
+    public function test_create_line_rejects_zero_and_negative_amounts_with_the_required_message(): void
     {
         $employee = $this->makeUser('Employee');
         $report = $this->makeReport($employee);
         $category = $this->makeCategory('Travel');
 
-        $this->actingAs($employee)->postJson('/api/reports/'.$report->id.'/lines', [
-            'expense_date' => now()->subDay()->format('Y-m-d'),
-            'category_id' => $category->id,
-            'merchant' => 'IndiGo',
-            'amount_paise' => 0,
-        ])->assertStatus(422)
-            ->assertJsonPath('errors.amount_paise.0', 'Amount must be greater than zero');
+        foreach ([0, -1] as $amountPaise) {
+            $this->actingAs($employee)->postJson('/api/reports/'.$report->id.'/lines', [
+                'expense_date' => now()->subDay()->format('Y-m-d'),
+                'category_id' => $category->id,
+                'merchant' => 'IndiGo',
+                'amount_paise' => $amountPaise,
+            ])->assertStatus(422)
+                ->assertJsonPath('errors.amount_paise.0', 'Amount must be more than zero');
+        }
     }
 
-    public function test_submit_without_a_receipt_answers_422(): void
+    public function test_update_line_rejects_zero_and_negative_amounts_with_the_required_message(): void
     {
         $employee = $this->makeUser('Employee');
         $report = $this->makeReport($employee);
-        $this->makeLine($report);
+        $line = $this->makeLine($report, 100);
+
+        foreach ([0, -1] as $amountPaise) {
+            $this->actingAs($employee)->patchJson('/api/reports/'.$report->id.'/lines/'.$line->id, [
+                'amount_paise' => $amountPaise,
+            ])->assertStatus(422)
+                ->assertJsonPath('errors.amount_paise.0', 'Amount must be more than zero');
+        }
+    }
+
+    public function test_submit_below_receipt_threshold_succeeds_without_a_receipt(): void
+    {
+        $manager = $this->makeUser('Manager');
+        $employee = $this->makeUser('Employee', ['manager_id' => $manager->id]);
+        $report = $this->makeReport($employee);
+        $this->makeLine($report, 99999);
+
+        $this->actingAs($employee)->postJson('/api/reports/'.$report->id.'/submit')
+            ->assertOk()
+            ->assertJsonPath('data.status', 'submitted')
+            ->assertJsonPath('data.manager.id', $manager->id);
+
+        $this->assertDatabaseHas('audit_events', [
+            'report_id' => $report->id,
+            'action' => 'submitted',
+            'to_status' => 'submitted',
+        ]);
+    }
+
+    public function test_submit_at_receipt_threshold_without_a_receipt_answers_422(): void
+    {
+        $employee = $this->makeUser('Employee');
+        $report = $this->makeReport($employee);
+        $this->makeLine($report, 100000);
 
         $this->actingAs($employee)->postJson('/api/reports/'.$report->id.'/submit')
             ->assertStatus(422)
             ->assertJsonPath('errors.lines.0.receipt.0', 'Receipt required');
     }
 
-    public function test_submit_with_receipts_writes_the_audit_event(): void
+    public function test_submit_at_receipt_threshold_with_a_receipt_writes_the_audit_event(): void
     {
         Storage::fake('receipts');
 
         $manager = $this->makeUser('Manager');
         $employee = $this->makeUser('Employee', ['manager_id' => $manager->id]);
         $report = $this->makeReport($employee);
-        $line = $this->makeLine($report, 75050);
+        $line = $this->makeLine($report, 100000);
 
         $this->actingAs($employee)
             ->post('/api/reports/'.$report->id.'/lines/'.$line->id.'/receipt', [

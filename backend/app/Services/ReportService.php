@@ -22,18 +22,32 @@ class ReportService
         return $report;
     }
 
-    /**
-     * Submits a report: every line needs a receipt, the total is recomputed and
-     * the audit event is written in the same transaction.
-     */
+    /** Submits a complete report and writes its audit event transactionally. */
     public function submit(Report $report, User $actor): Report
     {
         return DB::transaction(function () use ($report, $actor) {
             $report->load('lines.receipt');
 
             $errors = [];
+            $todayInKolkata = now(config('expensedesk.timezone', 'Asia/Kolkata'))->toDateString();
             foreach ($report->lines->values() as $index => $line) {
-                if (! $line->receipt) {
+                if (! $line->expense_date) {
+                    $errors['lines'][$index]['expense_date'] = ['Required'];
+                } elseif ($line->expense_date->toDateString() > $todayInKolkata) {
+                    $errors['lines'][$index]['expense_date'] = ['Expense date cannot be in the future'];
+                }
+                if (! $line->category_id) {
+                    $errors['lines'][$index]['category_id'] = ['Required'];
+                }
+                if (! trim((string) $line->merchant)) {
+                    $errors['lines'][$index]['merchant'] = ['Required'];
+                }
+                if ($line->amount_paise === null) {
+                    $errors['lines'][$index]['amount_paise'] = ['Required'];
+                } elseif ($line->amount_paise <= 0) {
+                    $errors['lines'][$index]['amount_paise'] = ['Amount must be more than zero'];
+                }
+                if ($line->amount_paise >= 100000 && ! $line->receipt) {
                     $errors['lines'][$index]['receipt'] = ['Receipt required'];
                 }
             }

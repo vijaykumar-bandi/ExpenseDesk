@@ -52,7 +52,7 @@ class ReportLine extends Model
                 'name' => $this->category->name,
             ] : null,
             'merchant' => $this->merchant,
-            'amount_paise' => (int) $this->amount_paise,
+            'amount_paise' => $this->amount_paise === null ? null : (int) $this->amount_paise,
             'note' => $this->note,
             'receipt' => $this->receipt ? [
                 'id' => $this->receipt->id,

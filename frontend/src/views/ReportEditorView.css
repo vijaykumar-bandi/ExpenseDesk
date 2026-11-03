@@ -1,0 +1,180 @@
+/* Report editor: one column on a phone, a 720px column with a right-hand
+   summary card on a desktop, and a sticky total bar beside Save draft and
+   Submit. */
+
+.editor {
+  padding-bottom: 96px;
+}
+
+.editor-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 720px;
+}
+
+.form-error {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-error-surface);
+  color: var(--color-error);
+  border-radius: var(--radius-card);
+}
+
+.header-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.lines-error {
+  margin: 0;
+}
+
+.empty-lines {
+  margin: 0;
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--color-muted);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.line-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.line-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.line-head h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.line-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+.note-field {
+  grid-column: 1 / -1;
+}
+
+.receipt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.receipt-name {
+  color: var(--color-muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.receipt-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* The file input stays in the page so a phone offers the camera, but the
+   button's label is what the person sees and clicks. */
+.receipt-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.line-errors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.add-line {
+  align-self: flex-start;
+}
+
+.total-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 -2px 12px rgba(27, 31, 42, 0.08);
+}
+
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+
+.total-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.total-value {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.total-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+@media (min-width: 768px) {
+  .editor {
+    padding-bottom: var(--page-padding-desktop);
+  }
+
+  .line-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .total-bar {
+    position: static;
+    box-shadow: none;
+  }
+}

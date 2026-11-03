@@ -11,10 +11,11 @@ return new class extends Migration
         Schema::create('report_lines', function (Blueprint $table) {
             $table->id();
             $table->foreignId('report_id')->constrained()->cascadeOnDelete();
-            $table->date('expense_date');
-            $table->foreignId('category_id')->constrained('categories');
-            $table->string('merchant');
-            $table->integer('amount_paise');
+            // Draft rows may be incomplete; submission validates every field.
+            $table->date('expense_date')->nullable();
+            $table->foreignId('category_id')->nullable()->constrained('categories');
+            $table->string('merchant')->nullable();
+            $table->integer('amount_paise')->nullable();
             $table->text('note')->nullable();
             $table->timestamps();
 
