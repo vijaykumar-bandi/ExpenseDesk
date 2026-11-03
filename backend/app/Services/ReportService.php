@@ -120,6 +120,26 @@ class ReportService
     public function reassign(Report $report, User $actor, int $managerId, string $reason): Report
     {
         return DB::transaction(function () use ($report, $actor, $managerId, $reason) {
+            $report = Report::query()->lockForUpdate()->findOrFail($report->id);
+
+            if ($report->status !== Report::STATUS_SUBMITTED) {
+                throw ValidationException::withMessages([
+                    'report' => ['Only Submitted reports can be reassigned'],
+                ]);
+            }
+
+            $managerIsEligible = User::query()
+                ->whereKey($managerId)
+                ->where('active', true)
+                ->whereHas('roles', fn ($query) => $query->where('name', User::ROLE_MANAGER))
+                ->exists();
+
+            if (! $managerIsEligible) {
+                throw ValidationException::withMessages([
+                    'manager_id' => ['The selected manager must be an active Manager'],
+                ]);
+            }
+
             $previous = $report->manager_id;
             $report->forceFill(['manager_id' => $managerId])->save();
 

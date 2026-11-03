@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,7 +22,21 @@ class StoreUserRequest extends FormRequest
             'roles' => ['required', 'array', 'min:1'],
             'roles.*' => [Rule::in(User::ROLES)],
             'password' => ['required', 'string', 'min:12'],
-            'manager_id' => ['nullable', 'integer', 'exists:users,id'],
+            'manager_id' => [
+                'nullable',
+                'integer',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    $isActiveManager = User::query()
+                        ->whereKey($value)
+                        ->where('active', true)
+                        ->whereHas('roles', fn ($query) => $query->where('name', User::ROLE_MANAGER))
+                        ->exists();
+
+                    if (! $isActiveManager) {
+                        $fail('The selected manager must be an active Manager');
+                    }
+                },
+            ],
         ];
     }
 
