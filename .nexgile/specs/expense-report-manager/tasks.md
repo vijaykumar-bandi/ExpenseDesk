@@ -44,7 +44,7 @@
     - _Files: frontend/src/views/ReportDetailsView.vue, frontend/src/views/ReportDetailsView.css, frontend/src/views/__tests__/ReportDetailsView.test.ts_
     - _Verify: npm test --workspace frontend -- ReportDetailsView_
     - _Issue: #5_
-  - [ ] 1.6 Manager approval inbox
+  - [x] 1.6 Manager approval inbox
     - Build the Manager approval inbox: the filter bar with an Employee select, a submission date range and an amount range, the sortable table with Employee, Report, Submitted, Total and Waiting, the Waiting 3+ days label, the row that opens the report details, the no-match message, the loading and error states, and the phone layout with filter chips and stacked cards.
     - _Requirements: 5.1, 5.2, 5.6, 5.10, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8_
     - _Depends: 1.1_
