@@ -37,7 +37,7 @@
     - _Files: frontend/src/views/ReportEditorView.vue, frontend/src/views/ReportEditorView.css, frontend/src/views/__tests__/ReportEditorView.test.ts_
     - _Verify: npm test --workspace frontend -- ReportEditorView_
     - _Issue: #4_
-  - [ ] 1.5 Report details and activity history
+  - [x] 1.5 Report details and activity history
     - Build the report details screen: the title, business purpose, Employee, Manager, status badge and total, the lines as cards with their receipts as links, the activity history newest first with the action, actor, Asia/Kolkata time and reason, the decision buttons Approve, Request changes and Reject with their reason dialog, the reassign dialog for an Administrator, no changing button on a Paid report, the access message, and the phone and desktop layouts.
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 5.3, 5.4, 5.5, 5.7, 5.8, 5.9, 13.1, 13.4, 13.5, 13.6, 13.7_
     - _Depends: 1.1_
@@ -79,7 +79,7 @@
     - _Files: frontend/src/views/AdminCategoriesView.vue, frontend/src/views/AdminCategoriesView.css, frontend/src/views/__tests__/AdminCategoriesView.test.ts_
     - _Verify: npm test --workspace frontend -- AdminCategoriesView_
     - _Issue: #9_
-  - [ ] 1.11 Administration audit history
+  - [x] 1.11 Administration audit history
     - Build the Administration audit history screen: every audit event newest first with the actor, the Asia/Kolkata time, the report and the state change, paged 50 at a time, with no control that edits or deletes an event, and the access message for a person without the Administrator role.
     - _Requirements: 8.9, 8.10, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8_
     - _Depends: 1.1_
