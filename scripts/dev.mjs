@@ -4,7 +4,7 @@
 // passed to the child processes through their env, so this works under cmd.exe.
 import { spawn, spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { createServer } from 'node:net';
+import { connect, createServer } from 'node:net';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
@@ -143,7 +143,7 @@ async function selectApiPort() {
   fail('Could not find an available loopback port for the Laravel API.');
 }
 
-const apiPort = await selectApiPort();
+let apiPort = await selectApiPort();
 const childEnv = { ...process.env, API_PORT: apiPort, PORT: port };
 
 function runPhp(args) {
@@ -160,7 +160,8 @@ function runPhp(args) {
 runPhp(['artisan', 'migrate', '--force']);
 runPhp(['artisan', 'db:seed', '--class=DevelopmentSeeder', '--force']);
 
-// 5. Both servers.
+// 5. Both servers. Keep the API startup separate so Windows can recover when
+// a port passes both probes but PHP's real server is still denied the bind.
 const children = [];
 
 function start(name, command, args, cwd, shell = false) {
@@ -171,6 +172,66 @@ function start(name, command, args, cwd, shell = false) {
   });
   children.push(child);
   return child;
+}
+
+function apiIsListening(portToCheck) {
+  return new Promise((resolve) => {
+    const socket = connect({ host: '127.0.0.1', port: Number(portToCheck) });
+    socket.setTimeout(100);
+    socket.once('connect', () => {
+      socket.destroy();
+      resolve(true);
+    });
+    const unavailable = () => {
+      socket.destroy();
+      resolve(false);
+    };
+    socket.once('error', unavailable);
+    socket.once('timeout', unavailable);
+  });
+}
+
+async function waitForApi(child, portToCheck) {
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    if (child.exitCode !== null) return false;
+    if (await apiIsListening(portToCheck)) return true;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return false;
+}
+
+async function startApi() {
+  const explicitlyConfigured = Boolean(process.env.API_PORT);
+
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    childEnv.API_PORT = apiPort;
+    const child = spawn(
+      php,
+      ['artisan', 'serve', '--host=127.0.0.1', `--port=${apiPort}`],
+      { cwd: backend, stdio: 'inherit', env: childEnv },
+    );
+
+    if (await waitForApi(child, apiPort)) {
+      child.on('exit', (code) => {
+        console.log(`[dev] api exited with code ${code}`);
+        shutdown(code ?? 0);
+      });
+      children.push(child);
+      return;
+    }
+
+    if (child.exitCode === null) child.kill();
+    if (explicitlyConfigured) {
+      fail(`API_PORT ${apiPort} could not be used by the Laravel API.`);
+    }
+
+    const failedPort = apiPort;
+    apiPort = await reserveAvailablePort('0');
+    while (!phpCanBind(apiPort)) apiPort = await reserveAvailablePort('0');
+    console.log(`[dev] Laravel could not start on API port ${failedPort}; retrying on ${apiPort}.`);
+  }
+
+  fail('Could not start the Laravel API on an available loopback port.');
 }
 
 let stopping = false;
@@ -186,7 +247,7 @@ function shutdown(code) {
 process.on('SIGINT', () => shutdown(0));
 process.on('SIGTERM', () => shutdown(0));
 
-start('api', php, ['artisan', 'serve', '--host=127.0.0.1', `--port=${apiPort}`], backend);
+await startApi();
 start('web', isWindows ? 'npm.cmd' : 'npm', ['run', 'dev'], frontend, isWindows);
 
 console.log(`[dev] API on http://127.0.0.1:${apiPort}  Web on http://127.0.0.1:${port}`);
