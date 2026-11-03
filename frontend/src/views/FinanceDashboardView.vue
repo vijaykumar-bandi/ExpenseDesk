@@ -115,6 +115,8 @@ function periodQuery(): string {
   return params.toString();
 }
 
+const exportUrl = computed(() => `/api/finance/export.csv?${periodQuery()}`);
+
 let latestLoad = 0;
 
 async function load(): Promise<void> {
@@ -340,14 +342,17 @@ onMounted(load);
         </DataTable>
 
         <h2 class="section">Payment history</h2>
-        <div class="field search">
-          <label for="payment-search">Search</label>
-          <input
-            id="payment-search"
-            v-model="search"
-            type="search"
-            placeholder="Employee, report or reference"
-          />
+        <div class="payment-controls">
+          <div class="field search">
+            <label for="payment-search">Search</label>
+            <input
+              id="payment-search"
+              v-model="search"
+              type="search"
+              placeholder="Employee, report or reference"
+            />
+          </div>
+          <a class="btn btn-secondary export-csv" :href="exportUrl">Export CSV</a>
         </div>
         <EmptyState v-if="payments.length === 0" title="No payments in this period" />
         <DataTable v-else :columns="paymentColumns" :rows="paymentRows" empty-text="No payments match.">

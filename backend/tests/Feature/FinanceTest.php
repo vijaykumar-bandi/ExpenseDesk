@@ -105,19 +105,45 @@ class FinanceTest extends TestCase
         ])->assertStatus(403);
     }
 
-    public function test_csv_export_streams_the_payments(): void
+    public function test_csv_export_applies_filters_and_writes_safe_required_columns(): void
     {
         $finance = $this->makeUser('Finance');
-        $report = $this->approvedReport();
+        $report = $this->approvedReport(200075);
+        $report->employee->update(['name' => '+Employee']);
+        $report->update(['title' => '-Quarterly report']);
 
         $this->actingAs($finance)->postJson('/api/reports/'.$report->id.'/reimbursement', [
-            'payment_date' => now()->format('Y-m-d'),
-            'payment_reference' => 'NEFT-123',
+            'payment_date' => '2026-10-15',
+            'payment_reference' => '=NEFT-123',
         ])->assertCreated();
 
-        $response = $this->actingAs($finance)->get('/api/finance/export.csv');
+        $outsidePeriod = $this->approvedReport(999);
+        $this->actingAs($finance)->postJson('/api/reports/'.$outsidePeriod->id.'/reimbursement', [
+            'payment_date' => '2026-09-30',
+            'payment_reference' => '@OUTSIDE',
+        ])->assertCreated();
+
+        $response = $this->actingAs($finance)->get('/api/finance/export.csv?from=2026-10-01&to=2026-10-31&q=Quarterly');
         $response->assertOk();
         $this->assertStringContainsString('text/csv', (string) $response->headers->get('Content-Type'));
-        $this->assertStringContainsString('NEFT-123', $response->streamedContent());
+        $rows = array_map('str_getcsv', preg_split('/\r\n|\n|\r/', trim($response->streamedContent())));
+
+        $this->assertSame([
+            ['Payment date', 'Payment reference', 'Employee', 'Report title', 'Amount in INR'],
+            ['2026-10-15', "'=NEFT-123", "'+Employee", "'-Quarterly report", '2000.75'],
+        ], $rows);
+    }
+
+    public function test_csv_export_has_only_the_header_when_no_payment_matches(): void
+    {
+        $finance = $this->makeUser('Finance');
+
+        $response = $this->actingAs($finance)->get('/api/finance/export.csv?from=2026-10-01&to=2026-10-31&q=missing');
+
+        $response->assertOk();
+        $this->assertSame(
+            ['Payment date', 'Payment reference', 'Employee', 'Report title', 'Amount in INR'],
+            str_getcsv(trim($response->streamedContent())),
+        );
     }
 }
