@@ -1,7 +1,7 @@
 # Tasks: ExpenseDesk
 
 - [ ] 1. Project setup
-  - [ ] 1.1 Project setup
+  - [x] 1.1 Project setup
     - Create the two-package skeleton: `frontend/` (Vue 3 + TypeScript + Vite + Vue Router + Pinia) and `backend/` (Laravel 11 on PHP 8.3), one root `package.json` whose `postinstall` runs `composer install` in `backend/`, and the root scripts `dev`, `test`, `test:backend`, `test:frontend`, `seed`, `backup`, `restore`.
     - Write the shared frontend foundation: `main.ts`, `App.vue`, the router with `/` redirecting to `/sign-in` and the role guards, `stores/auth.ts`, `api/client.ts` (CSRF header, session cookie, 401 to `/sign-in`, `ApiError`), `lib/money.ts`, `lib/dates.ts`, and the components `AppShell`, `StatusBadge`, `DataTable`, `EmptyState`, `LoadingState`, `ErrorState`, `ConfirmDialog`, `ToastHost`.
     - Write `frontend/src/styles/tokens.css` with the colours, font, spacing and radius of the design's Look and feel as CSS variables, and the global base styles every screen's own stylesheet builds on.
