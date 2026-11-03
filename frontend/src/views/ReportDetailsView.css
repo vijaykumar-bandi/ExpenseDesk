@@ -1,0 +1,276 @@
+/* Report details: one column on a phone, report and lines on the left with the
+   history and actions on the right from 1024px (design.md, Screens). */
+
+.details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.main,
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.head-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.head-top h1 {
+  margin: 0;
+  font-size: 22px;
+  overflow-wrap: anywhere;
+}
+
+.total {
+  margin: var(--space-2) 0 var(--space-3);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: 0 0 var(--space-3);
+}
+
+.meta dt {
+  color: var(--color-muted);
+}
+
+.meta dd {
+  margin: 0;
+}
+
+.purpose h2,
+.lines h2,
+.actions h2,
+.history h2 {
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  margin-bottom: var(--space-2);
+}
+
+.purpose p {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.muted {
+  color: var(--color-muted);
+}
+
+.line-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.line-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.line-category {
+  font-weight: 600;
+}
+
+.line-amount {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.line-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: var(--space-2) 0;
+}
+
+.line-meta dt {
+  color: var(--color-muted);
+}
+
+.line-meta dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.receipt {
+  margin: 0;
+}
+
+.receipt a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-min-height);
+  overflow-wrap: anywhere;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.action-buttons .btn,
+.reassign {
+  width: 100%;
+}
+
+.reassign {
+  margin-top: var(--space-2);
+}
+
+.btn-danger {
+  background: var(--color-error-surface);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 var(--space-4);
+  border-left: 2px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.entry {
+  position: relative;
+}
+
+.entry::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--space-4) - 6px);
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.entry-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.entry-action {
+  font-weight: 600;
+}
+
+.entry-time {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.entry-actor,
+.entry-reason,
+.entry-detail {
+  margin: var(--space-1) 0 0;
+  overflow-wrap: anywhere;
+}
+
+.entry-reason {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg);
+  border-radius: var(--radius-field);
+}
+
+.entry-detail {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.access {
+  color: var(--color-error);
+  background: var(--color-error-surface);
+  border-color: var(--color-error);
+}
+
+.dialog-error {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-6);
+  transform: translateX(-50%);
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-error-surface);
+  color: var(--color-error);
+  border-radius: var(--radius-field);
+  z-index: 60;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(27, 31, 42, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  z-index: 50;
+}
+
+.dialog {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+@media (min-width: 1024px) {
+  .details {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    align-items: start;
+  }
+
+  .side {
+    position: sticky;
+    top: var(--space-4);
+  }
+
+  .action-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .action-buttons .btn {
+    width: auto;
+    flex: 1 1 auto;
+  }
+
+  .reassign {
+    width: auto;
+  }
+}
