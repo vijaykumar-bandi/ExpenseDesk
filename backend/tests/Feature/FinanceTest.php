@@ -88,7 +88,7 @@ class FinanceTest extends TestCase
         $report = $this->approvedReport();
 
         $this->actingAs($finance)->postJson('/api/reports/'.$report->id.'/reimbursement', [
-            'payment_date' => now()->addDay()->format('Y-m-d'),
+            'payment_date' => now('Asia/Kolkata')->addDay()->format('Y-m-d'),
             'payment_reference' => 'NEFT-123',
         ])->assertStatus(422)
             ->assertJsonPath('errors.payment_date.0', 'Payment date cannot be in the future');

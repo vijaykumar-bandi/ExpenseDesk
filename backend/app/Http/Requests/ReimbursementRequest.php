@@ -14,7 +14,7 @@ class ReimbursementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'payment_date' => ['required', 'date', 'before_or_equal:today'],
+            'payment_date' => ['required', 'date', 'before_or_equal:'.now('Asia/Kolkata')->toDateString()],
             'payment_reference' => ['required', 'string', 'min:3', 'max:255'],
         ];
     }
