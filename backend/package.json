@@ -1,0 +1,12 @@
+{
+  "name": "expensedesk-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ExpenseDesk Laravel API",
+  "scripts": {
+    "test": "node ../scripts/run-backend-tests.mjs",
+    "seed": "php artisan db:seed --class=DevelopmentSeeder --force",
+    "backup": "php artisan expensedesk:backup",
+    "restore": "php artisan expensedesk:restore"
+  }
+}

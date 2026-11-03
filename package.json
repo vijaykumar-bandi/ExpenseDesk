@@ -1,0 +1,27 @@
+{
+  "name": "expensedesk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ExpenseDesk - expense reports, approvals and reimbursements",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/postinstall.mjs",
+    "dev": "node scripts/dev.mjs",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "npm test --workspace backend",
+    "test:frontend": "npm test --workspace frontend",
+    "build": "npm run build --workspace frontend",
+    "seed": "npm run seed --workspace backend",
+    "backup": "npm run backup --workspace backend",
+    "restore": "npm run restore --workspace backend"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

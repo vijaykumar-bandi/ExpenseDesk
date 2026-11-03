@@ -1,0 +1,6 @@
+*
+!public/
+!private/
+!backups/
+!receipts/
+!.gitignore

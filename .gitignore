@@ -3,3 +3,51 @@
 .nexgile/greenfield/thread.jsonl
 .nexgile/greenfield/checkpoints/
 docs/input/
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+frontend/dist/
+frontend/coverage/
+backend/public/build/
+backend/public/hot
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Local database and uploaded receipts
+backend/database/*.sqlite
+backend/database/*.sqlite-shm
+backend/database/*.sqlite-wal
+backend/storage/app/receipts/
+backend/storage/app/private/
+backend/storage/app/backups/
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/logs/*
+!backend/storage/framework/cache/data/.gitignore
+!backend/storage/framework/sessions/.gitignore
+!backend/storage/framework/views/.gitignore
+!backend/storage/logs/.gitignore
+
+# Test and tool output
+backend/.phpunit.result.cache
+backend/.phpunit.cache/
+test-results/
+playwright-report/
+coverage/
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
