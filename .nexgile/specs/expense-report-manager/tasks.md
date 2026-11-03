@@ -14,7 +14,7 @@
     - _Verify: npm test --workspace frontend_
     - _Verify: npm run build --workspace frontend_
     - _Issue: #1_
-  - [ ] 1.2 Sign-in and password recovery
+  - [x] 1.2 Sign-in and password recovery
     - Build the sign-in page, the forgot password page and the reset password page: the centred card with the ExpenseDesk wordmark, the email and password fields, Sign in, the Forgot password link, the error message above the button, the same message for a wrong password and a deactivated account, the rate-limit message, the always-the-same confirmation, the two password fields of at least 12 characters, and the invalid-link message with a link to send a new one; keyboard order, labels, visible focus, loading and error states.
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 13.4, 13.5, 13.6, 13.7_
     - _Depends: 1.1_
