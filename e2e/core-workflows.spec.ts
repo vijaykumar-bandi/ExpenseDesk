@@ -150,7 +150,7 @@ test.describe.serial('Employee, Manager, Finance and access-control workflows', 
       expect(reportId).not.toBe('');
       await expect(page.getByText('Awaiting approval')).toBeVisible();
       await expect(page.getByText('₹2,000.75').first()).toBeVisible();
-      await expect(page.getByText('Submitted')).toBeVisible();
+      await expect(page.getByText('Submitted', { exact: true })).toBeVisible();
       receiptUrl = await page.getByRole('link', { name: 'Open receipt accommodation-receipt.pdf' }).getAttribute('href') ?? '';
       expect(receiptUrl).toMatch(/^\/api\/receipts\/\d+$/);
 
@@ -271,7 +271,7 @@ test.describe.serial('Employee, Manager, Finance and access-control workflows', 
       const chunks: Buffer[] = [];
       for await (const chunk of csv) chunks.push(Buffer.from(chunk));
       const contents = Buffer.concat(chunks).toString('utf8');
-      expect(contents).toContain('Payment date,Payment reference,Employee,Report title,Amount in INR');
+      expect(contents).toContain('"Payment date","Payment reference",Employee,"Report title","Amount in INR"');
       expect(contents).toContain(paymentReference);
       expect(contents).toContain(reportTitle);
       expect(contents).toContain('2000.75');
