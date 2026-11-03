@@ -93,8 +93,8 @@
     - _Files: e2e/**, playwright.config.ts_
     - _Verify: npx playwright test --list_
     - _Issue: #13_
-- [ ] 2. Deployment setup
-  - [ ] 2.1 Deployment setup
+- [x] 2. Deployment setup
+  - [x] 2.1 Deployment setup
     - Write the Dockerfile that builds the Vue app and serves it with the Laravel API from one origin, the `.dockerignore`, and `docker-compose.prod.yml` with the app image `<slug>:${APP_TAG}`, the database file and receipts folder as volumes, and a Caddy service for HTTPS; the start command runs the migrations and creates the live app's first Administrator from `FIRST_ADMIN_EMAIL` and `FIRST_ADMIN_PASSWORD` when both are set and no account exists, and never runs the seeder.
     - _Requirements: 12.3, 12.4, 12.10_
     - _Depends: 1.1_
