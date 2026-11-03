@@ -22,6 +22,35 @@ class AdminTest extends TestCase
             ->assertJsonPath('message', 'You do not have access to this page');
     }
 
+    public function test_employee_cannot_validate_or_make_administration_writes(): void
+    {
+        $employee = $this->makeUser('Employee');
+        $target = $this->makeUser('Employee');
+        $manager = $this->makeUser('Manager');
+        $report = $this->makeReport($target, [
+            'manager_id' => $manager->id,
+            'status' => Report::STATUS_SUBMITTED,
+        ]);
+
+        $this->actingAs($employee)->postJson('/api/admin/users', [])
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'You do not have access to this page');
+        $this->actingAs($employee)->patchJson('/api/admin/users/'.$target->id, [
+            'active' => false,
+        ])->assertStatus(403)
+            ->assertJsonPath('message', 'You do not have access to this page');
+        $this->actingAs($employee)->postJson('/api/admin/reports/'.$report->id.'/reassign', [])
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'You do not have access to this page');
+
+        $this->assertTrue($target->fresh()->active);
+        $this->assertSame($manager->id, $report->fresh()->manager_id);
+        $this->assertDatabaseMissing('audit_events', [
+            'report_id' => $report->id,
+            'action' => 'reassigned',
+        ]);
+    }
+
     public function test_administrator_creates_a_user_with_a_role(): void
     {
         $admin = $this->makeUser('Administrator');
@@ -49,6 +78,41 @@ class AdminTest extends TestCase
             ->assertJsonPath('errors.password.0', 'Password must be at least 12 characters');
     }
 
+    public function test_user_manager_assignments_require_an_active_manager(): void
+    {
+        $admin = $this->makeUser('Administrator');
+        $target = $this->makeUser('Employee');
+        $inactiveManager = $this->makeUser('Manager');
+        $inactiveManager->update(['active' => false]);
+        $invalidTargets = [
+            $this->makeUser('Employee'),
+            $this->makeUser('Finance'),
+            $this->makeUser('Administrator'),
+            $inactiveManager,
+        ];
+
+        foreach ($invalidTargets as $index => $invalidTarget) {
+            $this->actingAs($admin)->patchJson('/api/admin/users/'.$target->id, [
+                'manager_id' => $invalidTarget->id,
+            ])->assertStatus(422)
+                ->assertJsonPath('errors.manager_id.0', 'The selected manager must be an active Manager');
+
+            $this->assertNull($target->fresh()->manager_id);
+
+            $email = 'invalid-manager-'.$index.'@expensedesk.test';
+            $this->actingAs($admin)->postJson('/api/admin/users', [
+                'name' => 'Invalid Manager Assignment',
+                'email' => $email,
+                'roles' => ['Employee'],
+                'password' => 'Password123456',
+                'manager_id' => $invalidTarget->id,
+            ])->assertStatus(422)
+                ->assertJsonPath('errors.manager_id.0', 'The selected manager must be an active Manager');
+
+            $this->assertDatabaseMissing('users', ['email' => $email]);
+        }
+    }
+
     public function test_deactivating_a_user_ends_their_sessions(): void
     {
         $admin = $this->makeUser('Administrator');
@@ -73,12 +137,19 @@ class AdminTest extends TestCase
     public function test_administrator_reassigns_a_submitted_report(): void
     {
         $admin = $this->makeUser('Administrator');
+        $previousManager = $this->makeUser('Manager');
         $manager = $this->makeUser('Manager');
         $employee = $this->makeUser('Employee');
         $report = $this->makeReport($employee, [
+            'manager_id' => $previousManager->id,
             'status' => Report::STATUS_SUBMITTED,
             'submitted_at' => now(),
         ]);
+
+        $this->actingAs($admin)->getJson('/api/reports?scope=all&status=submitted')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $report->id)
+            ->assertJsonPath('data.0.employee.id', $employee->id);
 
         $this->actingAs($admin)->postJson('/api/admin/reports/'.$report->id.'/reassign', [
             'manager_id' => $manager->id,
@@ -89,6 +160,9 @@ class AdminTest extends TestCase
         $this->assertDatabaseHas('audit_events', [
             'report_id' => $report->id,
             'action' => 'reassigned',
+            'previous_manager_id' => $previousManager->id,
+            'new_manager_id' => $manager->id,
+            'reason' => 'Original manager is on leave',
         ]);
     }
 
@@ -104,6 +178,82 @@ class AdminTest extends TestCase
             'reason' => 'short',
         ])->assertStatus(422)
             ->assertJsonPath('errors.reason.0', 'Reason must be at least 10 characters');
+    }
+
+    public function test_only_submitted_reports_can_be_reassigned(): void
+    {
+        $admin = $this->makeUser('Administrator');
+        $previousManager = $this->makeUser('Manager');
+        $newManager = $this->makeUser('Manager');
+        $employee = $this->makeUser('Employee');
+        $statuses = [
+            Report::STATUS_DRAFT,
+            Report::STATUS_APPROVED,
+            Report::STATUS_REJECTED,
+            Report::STATUS_CHANGES_REQUESTED,
+            Report::STATUS_PAID,
+        ];
+
+        foreach ($statuses as $status) {
+            $report = $this->makeReport($employee, [
+                'manager_id' => $previousManager->id,
+                'status' => $status,
+            ]);
+
+            $this->actingAs($admin)->postJson('/api/admin/reports/'.$report->id.'/reassign', [
+                'manager_id' => $newManager->id,
+                'reason' => 'The current manager is unavailable',
+            ])->assertStatus(422)
+                ->assertJsonPath('errors.report.0', 'Only Submitted reports can be reassigned');
+
+            $this->assertDatabaseHas('reports', [
+                'id' => $report->id,
+                'manager_id' => $previousManager->id,
+                'status' => $status,
+            ]);
+            $this->assertDatabaseMissing('audit_events', [
+                'report_id' => $report->id,
+                'action' => 'reassigned',
+            ]);
+        }
+    }
+
+    public function test_reassignment_requires_an_active_manager(): void
+    {
+        $admin = $this->makeUser('Administrator');
+        $previousManager = $this->makeUser('Manager');
+        $employee = $this->makeUser('Employee');
+        $inactiveManager = $this->makeUser('Manager');
+        $inactiveManager->update(['active' => false]);
+        $invalidTargets = [
+            $this->makeUser('Employee'),
+            $this->makeUser('Finance'),
+            $this->makeUser('Administrator'),
+            $inactiveManager,
+        ];
+
+        foreach ($invalidTargets as $invalidTarget) {
+            $report = $this->makeReport($employee, [
+                'manager_id' => $previousManager->id,
+                'status' => Report::STATUS_SUBMITTED,
+                'submitted_at' => now(),
+            ]);
+
+            $this->actingAs($admin)->postJson('/api/admin/reports/'.$report->id.'/reassign', [
+                'manager_id' => $invalidTarget->id,
+                'reason' => 'The current manager is unavailable',
+            ])->assertStatus(422)
+                ->assertJsonPath('errors.manager_id.0', 'The selected manager must be an active Manager');
+
+            $this->assertDatabaseHas('reports', [
+                'id' => $report->id,
+                'manager_id' => $previousManager->id,
+            ]);
+            $this->assertDatabaseMissing('audit_events', [
+                'report_id' => $report->id,
+                'action' => 'reassigned',
+            ]);
+        }
     }
 
     public function test_categories_list_only_active_ones_for_the_editor(): void

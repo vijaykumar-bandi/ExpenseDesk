@@ -9,6 +9,7 @@ use App\Models\Report;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\ReportService;
+use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,11 @@ class AdminUserController extends Controller
 {
     public function __construct(private ReportService $reports)
     {
+        $this->middleware(function (Request $request, Closure $next) {
+            $this->authorizeAdmin($request);
+
+            return $next($request);
+        });
     }
 
     public function index(Request $request): JsonResponse

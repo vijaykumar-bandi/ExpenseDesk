@@ -78,7 +78,9 @@ const routes: RouteRecordRaw[] = [
     path: '/admin/users',
     name: 'admin-users',
     component: () => import('../views/AdminUsersView.vue'),
-    meta: { roles: ['Administrator'], title: 'Users' },
+    // The view renders the required access-denied message without making an
+    // API request when a signed-in non-Administrator opens this URL directly.
+    meta: { title: 'Users' },
   },
   {
     path: '/admin/categories',

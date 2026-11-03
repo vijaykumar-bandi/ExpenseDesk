@@ -24,7 +24,10 @@ class ReportController extends Controller
 
         $query = Report::query()->with(['employee', 'manager']);
 
-        if ($scope === 'inbox' && $user->isManager()) {
+        if ($scope === 'all' && $user->isAdministrator()) {
+            // Administrators need every submitted report in the user-management
+            // screen so they can reassign pending reviews.
+        } elseif ($scope === 'inbox' && $user->isManager()) {
             $query->where('manager_id', $user->id)->where('status', Report::STATUS_SUBMITTED);
         } else {
             $query->where('employee_id', $user->id);
