@@ -43,7 +43,7 @@ const label = computed(() => LABELS[props.status] ?? props.status);
 .badge-approved,
 .badge-paid {
   background: var(--color-success-surface);
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .badge-rejected {
