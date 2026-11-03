@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { RouterLink, useRouter } from 'vue-router';
 import AppShell from '../components/AppShell.vue';
 import DataTable, { type DataTableColumn } from '../components/DataTable.vue';
 import EmptyState from '../components/EmptyState.vue';
@@ -31,6 +32,13 @@ const columns: DataTableColumn[] = [
 const rows = ref<Record<string, unknown>[]>([]);
 const loading = ref(true);
 const error = ref('');
+const router = useRouter();
+
+function openReport(row: Record<string, unknown>): void {
+  if (typeof row.id === 'number' || typeof row.id === 'string') {
+    void router.push(`/reports/${row.id}`);
+  }
+}
 
 async function load(): Promise<void> {
   loading.value = true;
@@ -63,7 +71,18 @@ onMounted(load);
       <LoadingState v-if="loading" />
       <ErrorState v-else-if="error" :message="error" @retry="load" />
       <EmptyState v-else-if="rows.length === 0" title="Nothing waiting" message="No reports are waiting for your decision." />
-      <DataTable v-else :columns="columns" :rows="rows" empty-text="No reports match.">
+      <DataTable
+        v-else
+        :columns="columns"
+        :rows="rows"
+        empty-text="No reports match."
+        @row-click="openReport"
+      >
+        <template #cell-title="{ row }">
+          <RouterLink :to="`/reports/${row.id}`" @click.stop>
+            {{ row.title }}
+          </RouterLink>
+        </template>
         <template #cell-status="{ row }">
           <StatusBadge :status="String(row.status)" />
         </template>

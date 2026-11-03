@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -28,21 +28,71 @@ const emit = defineEmits<{
 }>();
 
 const reason = ref('');
+const dialog = ref<HTMLElement | null>(null);
+let returnFocus: HTMLElement | null = null;
+
+function focusableElements(): HTMLElement[] {
+  if (!dialog.value) return [];
+  return Array.from(
+    dialog.value.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+    ),
+  );
+}
 
 watch(
   () => props.open,
   (open) => {
-    if (open) reason.value = '';
+    if (open) {
+      reason.value = '';
+      returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      void nextTick(() => focusableElements()[0]?.focus());
+    } else if (returnFocus) {
+      returnFocus.focus();
+      returnFocus = null;
+    }
   },
 );
 
 function confirm(): void {
   emit('confirm', reason.value.trim());
 }
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape' && !props.busy) {
+    event.preventDefault();
+    emit('cancel');
+    return;
+  }
+  if (event.key !== 'Tab') return;
+
+  const elements = focusableElements();
+  if (elements.length === 0) {
+    event.preventDefault();
+    return;
+  }
+  const first = elements[0];
+  const last = elements[elements.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
 </script>
 
 <template>
-  <div v-if="open" class="overlay" role="dialog" aria-modal="true" :aria-label="title">
+  <div
+    v-if="open"
+    ref="dialog"
+    class="overlay"
+    role="dialog"
+    aria-modal="true"
+    :aria-label="title"
+    @keydown="handleKeydown"
+  >
     <div class="dialog card">
       <h2>{{ title }}</h2>
       <p v-if="message">{{ message }}</p>
