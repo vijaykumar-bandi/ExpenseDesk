@@ -32,6 +32,7 @@ const reportId = route.params.id ? Number(route.params.id) : null;
 
 const report = ref<Report | null>(null);
 const categories = ref<Category[]>([]);
+const selectedCategoryId = ref('');
 const loading = ref(true);
 const error = ref('');
 
@@ -66,14 +67,48 @@ onMounted(load);
         <p v-if="report" class="summary">
           {{ report.title || 'Untitled report' }} · {{ formatInr(report.total_paise) }}
         </p>
-        <p class="muted">{{ categories.length }} categories available.</p>
+        <div class="field">
+          <label for="report-category">Category</label>
+          <select id="report-category" v-model="selectedCategoryId" name="category_id">
+            <option value="" disabled>Select a category</option>
+            <option v-for="category in categories" :key="category.id" :value="String(category.id)">
+              {{ category.name }}
+            </option>
+          </select>
+          <p v-if="categories.length === 0" class="muted">No active categories are available.</p>
+        </div>
       </div>
     </div>
   </AppShell>
 </template>
 
 <style scoped>
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field select {
+  min-height: 44px;
+  padding: 10px 12px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.field select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .muted {
+  margin: 0;
   color: var(--color-muted);
 }
 </style>
