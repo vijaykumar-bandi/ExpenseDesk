@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { api, ApiError } from '../api/client';
 import { useAuthStore, type CurrentUser } from '../stores/auth';
+import './SignInView.css';
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -12,10 +13,18 @@ const password = ref('');
 const error = ref('');
 const busy = ref(false);
 
+/** The one message for a wrong password and for a deactivated account (1.3, 1.9). */
+const INVALID_CREDENTIALS = 'Email or password is incorrect';
+/** The message the API sends once an email has failed 5 times in 15 minutes (1.4). */
+const TOO_MANY_ATTEMPTS = 'Too many attempts. Try again in 15 minutes.';
+
 async function submit(): Promise<void> {
+  if (busy.value) return;
+
   error.value = '';
   busy.value = true;
   try {
+    await api.csrf();
     const response = await api.post<{ user: CurrentUser }>('/api/login', {
       email: email.value,
       password: password.value,
@@ -24,7 +33,15 @@ async function submit(): Promise<void> {
     await router.push(auth.home);
   } catch (e) {
     if (e instanceof ApiError) {
-      error.value = e.errors.email?.[0] ?? e.message;
+      if (e.status === 429) {
+        error.value = TOO_MANY_ATTEMPTS;
+      } else if (e.status === 422) {
+        // The API answers a wrong password and a deactivated account with the
+        // same 422 message; the email field keeps what the person typed.
+        error.value = INVALID_CREDENTIALS;
+      } else {
+        error.value = e.message;
+      }
     } else {
       error.value = 'Something went wrong. Try again.';
     }
@@ -35,55 +52,48 @@ async function submit(): Promise<void> {
 </script>
 
 <template>
-  <div class="auth-page">
+  <main class="auth-page">
     <div class="auth-card card">
       <h1 class="wordmark">ExpenseDesk</h1>
-      <form class="auth-form" @submit.prevent="submit">
+
+      <form class="auth-form" novalidate @submit.prevent="submit">
         <div class="field">
           <label for="email">Email</label>
-          <input id="email" v-model="email" type="email" autocomplete="username" required />
+          <input
+            id="email"
+            v-model="email"
+            type="email"
+            name="email"
+            autocomplete="username"
+            inputmode="email"
+            required
+            :aria-invalid="error ? 'true' : undefined"
+            :aria-describedby="error ? 'sign-in-error' : undefined"
+          />
         </div>
+
         <div class="field">
           <label for="password">Password</label>
-          <input id="password" v-model="password" type="password" autocomplete="current-password" required />
+          <input
+            id="password"
+            v-model="password"
+            type="password"
+            name="password"
+            autocomplete="current-password"
+            required
+            :aria-invalid="error ? 'true' : undefined"
+            :aria-describedby="error ? 'sign-in-error' : undefined"
+          />
         </div>
-        <p v-if="error" class="field-error" role="alert">{{ error }}</p>
-        <button type="submit" class="btn btn-primary" :disabled="busy">
+
+        <p v-if="error" id="sign-in-error" class="field-error auth-error" role="alert">{{ error }}</p>
+
+        <button type="submit" class="btn btn-primary auth-submit" :disabled="busy" :aria-busy="busy">
           {{ busy ? 'Signing in…' : 'Sign in' }}
         </button>
+
         <RouterLink to="/forgot-password" class="forgot">Forgot password</RouterLink>
       </form>
     </div>
-  </div>
+  </main>
 </template>
-
-<style scoped>
-.auth-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-4);
-}
-
-.auth-card {
-  width: 100%;
-  max-width: 400px;
-}
-
-.wordmark {
-  text-align: center;
-  color: var(--color-primary);
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.forgot {
-  text-align: center;
-  font-size: 14px;
-}
-</style>

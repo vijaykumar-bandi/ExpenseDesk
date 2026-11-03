@@ -26,7 +26,9 @@ Route::get('/health', HealthController::class);
 
 Route::get('/csrf-cookie', [AuthController::class, 'csrfCookie']);
 
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+// AuthController counts only failed credentials. A named route throttle would
+// count every request as well and make each failed login consume two attempts.
+Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
