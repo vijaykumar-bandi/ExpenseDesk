@@ -96,6 +96,10 @@ async function request<T>(method: string, path: string, body?: unknown, isForm =
 }
 
 export const api = {
+  /** Establish the session and XSRF-TOKEN cookie before a state-changing request. */
+  csrf(): Promise<void> {
+    return request<void>('GET', '/api/csrf-cookie');
+  },
   get<T>(path: string): Promise<T> {
     return request<T>('GET', path);
   },

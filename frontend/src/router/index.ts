@@ -108,15 +108,19 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const auth = useAuthStore();
 
-  if (!auth.loaded) {
-    await auth.load();
-  }
-
+  // Public authentication screens must be reachable without probing /api/me.
+  // A 401 is the normal answer for a signed-out person, but issuing that
+  // request here both creates a failed page-health request and lets the global
+  // unauthorized handler interrupt password-reset navigation.
   if (to.meta.public) {
     if (auth.isSignedIn && (to.name === 'sign-in' || to.name === 'forgot-password')) {
       return auth.home;
     }
     return true;
+  }
+
+  if (!auth.loaded) {
+    await auth.load();
   }
 
   if (!auth.isSignedIn) {

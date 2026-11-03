@@ -4,6 +4,7 @@
 // passed to the child processes through their env, so this works under cmd.exe.
 import { spawn, spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:net';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
@@ -14,7 +15,32 @@ const frontend = join(root, 'frontend');
 
 const isWindows = process.platform === 'win32';
 const port = process.env.PORT || '5173';
-const apiPort = process.env.API_PORT || '8000';
+
+function reserveAvailablePort(preferredPort) {
+  return new Promise((resolve, reject) => {
+    const server = createServer();
+    server.once('error', reject);
+    server.listen(Number(preferredPort), '127.0.0.1', () => {
+      const address = server.address();
+      const selectedPort = typeof address === 'object' && address ? String(address.port) : preferredPort;
+      server.close((error) => (error ? reject(error) : resolve(selectedPort)));
+    });
+  });
+}
+
+let apiPort;
+try {
+  apiPort = await reserveAvailablePort(process.env.API_PORT || '8000');
+} catch (error) {
+  if (process.env.API_PORT) {
+    fail(`API_PORT ${process.env.API_PORT} is unavailable: ${error.message}`);
+  }
+
+  // Port 8000 is the default, but another checkout may already be using it.
+  // Pick a free loopback port and pass that same port to Vite's proxy.
+  apiPort = await reserveAvailablePort('0');
+  console.log(`[dev] Port 8000 is unavailable; using API port ${apiPort}.`);
+}
 
 function fail(message) {
   console.error(`[dev] ${message}`);
@@ -113,8 +139,8 @@ runPhp(['artisan', 'db:seed', '--class=DevelopmentSeeder', '--force']);
 // 5. Both servers.
 const children = [];
 
-function start(name, command, args, cwd) {
-  const child = spawn(command, args, { cwd, stdio: 'inherit', env: childEnv, shell: isWindows });
+function start(name, command, args, cwd, shell = false) {
+  const child = spawn(command, args, { cwd, stdio: 'inherit', env: childEnv, shell });
   child.on('exit', (code) => {
     console.log(`[dev] ${name} exited with code ${code}`);
     shutdown(code ?? 0);
@@ -137,6 +163,6 @@ process.on('SIGINT', () => shutdown(0));
 process.on('SIGTERM', () => shutdown(0));
 
 start('api', php, ['artisan', 'serve', '--host=127.0.0.1', `--port=${apiPort}`], backend);
-start('web', isWindows ? 'npm.cmd' : 'npm', ['run', 'dev'], frontend);
+start('web', isWindows ? 'npm.cmd' : 'npm', ['run', 'dev'], frontend, isWindows);
 
 console.log(`[dev] API on http://127.0.0.1:${apiPort}  Web on http://127.0.0.1:${port}`);
