@@ -1,0 +1,239 @@
+/* Manager approval inbox: a filter bar above a sortable table on a desktop,
+   filter chips and stacked report cards on a phone. */
+
+.inbox-head {
+  margin-bottom: var(--space-4);
+}
+
+.inbox-sub {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+/* Filter bar */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.filters .field {
+  min-width: 180px;
+}
+
+.filters .field label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.filters fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.filters legend {
+  padding: 0;
+  margin-bottom: var(--space-1);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.filters select,
+.filters input {
+  width: 100%;
+  min-height: var(--control-min-height);
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-field);
+  background: var(--color-surface);
+}
+
+.filters select:focus,
+.filters input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 76, 202, 0.15);
+  outline: none;
+}
+
+.range-inputs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.range-inputs input {
+  width: 150px;
+}
+
+.clear {
+  margin-left: auto;
+}
+
+/* Screen-reader-only labels keep every field named without a visible caption. */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Filter chips: shown on a phone in place of the filter bar. */
+
+.chips {
+  display: none;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+}
+
+.chip {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border-radius: var(--radius-badge);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* Table cells */
+
+.employee {
+  font-weight: 600;
+}
+
+.report-link {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.report-link:hover {
+  text-decoration: underline;
+}
+
+.submitted {
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.waiting {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.waiting-label {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-badge);
+  background: var(--color-warning-surface);
+  color: var(--color-warning);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Stacked cards: shown on a phone in place of the table. */
+
+.inbox-cards {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.phone-empty {
+  display: none;
+}
+
+.inbox-card {
+  padding: 0;
+}
+
+.card-link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  min-height: var(--control-min-height);
+  color: inherit;
+  text-decoration: none;
+}
+
+.card-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.card-title {
+  font-weight: 600;
+}
+
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 13px;
+}
+
+/* Phone: chips and stacked cards, no horizontal scrolling. */
+
+@media (max-width: 767px) {
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters .field {
+    min-width: 0;
+  }
+
+  .range-inputs input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .clear {
+    margin-left: 0;
+  }
+
+  .chips {
+    display: flex;
+  }
+
+  .inbox-table {
+    display: none;
+  }
+
+  .inbox-cards {
+    display: flex;
+  }
+
+  .phone-empty {
+    display: block;
+  }
+}
