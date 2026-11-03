@@ -86,7 +86,7 @@ const routes: RouteRecordRaw[] = [
     path: '/admin/categories',
     name: 'admin-categories',
     component: () => import('../views/AdminCategoriesView.vue'),
-    meta: { roles: ['Administrator'], title: 'Categories' },
+    meta: { roles: ['Administrator'], showAccessDenied: true, title: 'Categories' },
   },
   {
     path: '/admin/audit',
