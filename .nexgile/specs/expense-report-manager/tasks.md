@@ -51,7 +51,7 @@
     - _Files: frontend/src/views/ApprovalInboxView.vue, frontend/src/views/ApprovalInboxView.css, frontend/src/views/__tests__/ApprovalInboxView.test.ts_
     - _Verify: npm test --workspace frontend -- ApprovalInboxView_
     - _Issue: #6_
-  - [ ] 1.7 Finance dashboard and reimbursement
+  - [x] 1.7 Finance dashboard and reimbursement
     - Build the Finance dashboard: the approved unpaid total card and count, the paid-period card with its date range and the current month selected on open, the approved unpaid table, the Record payment dialog with the payment date, the payment reference and the full amount filled in and not editable, the already-paid message, the future-date message, the searchable payment history, the loading, empty and error states, and the desktop table layout.
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8_
     - _Depends: 1.1_
@@ -65,7 +65,7 @@
     - _Files: frontend/src/views/FinanceDashboardView.vue, frontend/src/views/FinanceDashboardView.css, frontend/src/views/__tests__/FinanceDashboardView.test.ts_
     - _Verify: npm test --workspace frontend -- FinanceDashboardView_
     - _Issue: #12_
-  - [ ] 1.9 Administration users and manager assignments
+  - [x] 1.9 Administration users and manager assignments
     - Build the Administration users screen: the sortable table with name, email, roles, assigned Manager and active state, the Add user dialog with a name, an email, at least one role and an initial password of at least 12 characters, the edit dialog for roles, Manager and active state, the deactivate action with its confirmation, the reassign dialog for a Submitted report with a reason of at least 10 characters, and the access message for a person without the Administrator role.
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.10, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8_
     - _Depends: 1.1_
